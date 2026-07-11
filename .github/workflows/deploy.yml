@@ -38,7 +38,7 @@ jobs:
       # Run automated pytest suite before deploying
       - name: Run Automated Tests
         run: |
-          pytest -v
+          python -m pytest -v
 
       - name: Configure AWS Credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
