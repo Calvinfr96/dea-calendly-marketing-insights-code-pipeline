@@ -1,0 +1,50 @@
+name: Deploy Calendly Marketing Insights Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write   # Required for requesting the AWS JWT OIDC token
+  contents: read    # Required to check out your repository code
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (Required for AWS CDK CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install CDK Global CLI
+        run: npm install -g aws-cdk
+
+      - name: Setup Python Runtime
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Run automated pytest suite before deploying
+      - name: Run Automated Tests
+        run: |
+          pytest -v
+
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::515424600331:role/GitHubActionsCDKDeployRole # Change to your IAM Role ARN
+          aws-region: us-east-1                                               # Change to your AWS target region
+
+      - name: Deploy Stacks via AWS CDK
+        run: cdk deploy --require-approval never
