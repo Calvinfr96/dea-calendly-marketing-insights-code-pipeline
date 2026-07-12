@@ -1,6 +1,7 @@
 import aws_cdk as cdk
 from aws_cdk import (
     Stack,
+    Duration,
     aws_s3 as s3,
     aws_lambda as _lambda,
     aws_apigatewayv2 as apigwv2,              # Stable module
@@ -40,6 +41,7 @@ class CalendlyWebhookStack(Stack):
             runtime=_lambda.Runtime.PYTHON_3_12,
             handler="handler.lambda_handler",
             code=_lambda.Code.from_asset("lambda_ingestion"),
+            timeout=Duration.minutes(15),
             environment={
                 "BUCKET_NAME": webhook_raw_bucket.bucket_name
             }
